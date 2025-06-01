@@ -1,0 +1,59 @@
+// Code your design here
+module up_down_counter (
+    input clk,
+    input reset,
+    input up_down, // 1 for up, 0 for down
+    output reg [3:0] count
+);
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            count <= 4'b0000;
+        else if (up_down)
+            count <= count + 1;
+        else
+            count <= count - 1;
+    end
+endmodule
+//Testbench Code
+module tb_up_down_counter;
+    reg clk;
+    reg reset;
+    reg up_down;
+    wire [3:0] count;
+
+    up_down_counter uut (
+        .clk(clk),
+        .reset(reset),
+        .up_down(up_down),
+        .count(count)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns clock period
+    end
+
+    initial begin
+        $dumpfile("up_down_counter.vcd");
+        $dumpvars(0, tb_up_down_counter);
+        $display("Time\tReset Up/Down Count");
+        $monitor("%0t\t%b\t%b\t%b", $time, reset, up_down, count);
+
+        // Initialize
+        reset = 1; up_down = 1; #10;
+        reset = 0;             #50;
+
+        // Count Up
+        up_down = 1;           #40;
+
+        // Count Down
+        up_down = 0;           #40;
+
+        // Reset in between
+        reset = 1;             #10;
+        reset = 0; up_down = 1;#30;
+
+        #100 $finish;
+    end
+endmodule

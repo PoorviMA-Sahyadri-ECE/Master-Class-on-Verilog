@@ -1,0 +1,65 @@
+// Code your design here
+module mux_dff_loop (
+    input wire clk,
+    input wire i1,
+    input wire s,
+    output wire y
+);
+
+    wire dff_out;
+
+    // Multiplexer: choose between old value or new input
+    assign y = (s == 1'b0) ? dff_out : i1;
+
+    // D Flip-Flop to store the selected value
+    reg q;
+    always @(posedge clk) begin
+        q <= y;  // Store MUX output at clock edge
+    end
+
+    assign dff_out = q;
+
+endmodule
+//Testbench code
+`timescale 1ns / 1ps
+
+module tb_mux_dff_loop;
+
+    reg clk;
+    reg i1;
+    reg s;
+    wire y;
+
+    // Instantiate the design
+    mux_dff_loop uut (
+        .clk(clk),
+        .i1(i1),
+        .s(s),
+        .y(y)
+    );
+
+    // Clock generator: 10ns period
+    always #5 clk = ~clk;
+
+    initial begin
+        // Initialize signals
+        clk = 0;
+        i1  = 0;
+        s   = 0;
+
+        // Monitor signal changes
+        $monitor("Time=%0t | clk=%b s=%b i1=%b | y=%b", $time, clk, s, i1, y);
+
+        // Apply test sequence
+        #10 s = 1; i1 = 1;
+        #10 s = 0;
+        #10 s = 1; i1 = 0;
+        #10 s = 0;
+        #10 s = 1; i1 = 1;
+        #10 s = 0;
+        #20;
+
+        $finish;
+    end
+
+endmodule
